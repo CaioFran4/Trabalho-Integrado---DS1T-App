@@ -2,8 +2,18 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 
+st.set_page_config(page_title="Login", initial_sidebar_state="collapsed")
+
 st.markdown("""
     <style>
+    [data-testid="stSidebar"], [data-testid="collapsedControl"] {
+        display: none;
+    }
+
+    header, footer, #MainMenu {
+        visibility: hidden;
+    }
+
     [data-testid="stVerticalBlockBorderWrapper"] {
         border-radius: 15px;
         padding: 20px;
@@ -12,7 +22,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-_, col_centro, _ = st.columns([1,2,1])
+_, col_centro, _ = st.columns([1, 2, 1])
 
 with col_centro:
     with st.container(border=True):
@@ -24,5 +34,8 @@ with col_centro:
         st.write("")
 
         with st.container(horizontal=True, horizontal_alignment="center"):
-            st.button("Cadastre-se")
-            st.button("Entrar", type="primary")
+            botao_cadastro = st.button("Cadastre-se")
+            botao_entrar = st.button("Entrar", type="primary")
+
+            if botao_cadastro:
+                st.switch_page('pages/cadastro.py')
