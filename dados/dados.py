@@ -27,9 +27,10 @@ def inicializar_banco():
             nome_prod TEXT NOT NULL,
             descricao TEXT NOT NULL DEFAULT 'Sem descrição',
             categoria TEXT NOT NULL DEFAULT 'Massa' CHECK(categoria IN ('Massa', 'bebidas', 'igrediente')),
-            status TEXT NOT NULL CHECK (status IN ('Disponivel', 'Indisponivel'))
+            status TEXT NOT NULL DEFAULT 'Disponivel' CHECK (status IN ('Disponivel', 'Indisponivel'))
         )
     ''')
+
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS pedidos (
