@@ -74,6 +74,6 @@ with col_centro:
                 st.warning("Preencha seu ID e sua senha.")
             elif verificar_login(id_user, senha_user):
                 st.session_state.usuario_logado = id_user
-                st.switch_page("pages/home.py")
+                st.switch_page("pages/dashboard.py")
             else:
                 st.error("ID ou senha incorretos.")
