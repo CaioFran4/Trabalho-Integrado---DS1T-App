@@ -19,16 +19,28 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-def verificar_login(id_digitado, senha_digitada):
+def preparar_usuario_padrao():
     conexao = sqlite3.connect('banco.db')
     cursor = conexao.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS usuario (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_user TEXT NOT NULL UNIQUE,
-            senha TEXT NOT NULL
+            id_user TEXT NOT NULL UNIQUE DEFAULT '12345678',
+            senha TEXT NOT NULL DEFAULT '123'
         )
     ''')
+    cursor.execute('''
+        INSERT OR IGNORE INTO usuario (id_user, senha)
+        VALUES ('12345678', '123')
+    ''')
+    conexao.commit()
+    conexao.close()
+
+preparar_usuario_padrao()
+
+def verificar_login(id_digitado, senha_digitada):
+    conexao = sqlite3.connect('banco.db')
+    cursor = conexao.cursor()
     cursor.execute(
         "SELECT 1 FROM usuario WHERE id_user = ? AND senha = ?",
         (id_digitado, senha_digitada)
@@ -42,6 +54,8 @@ _, col_centro, _ = st.columns([1, 2, 1])
 with col_centro:
     with st.container(border=True):
         st.markdown("<h2 style='text-align: center;'>Login</h2>", unsafe_allow_html=True)
+        
+        st.info("**Acesso Padrão:** ID `12345678` | Senha `123`")
 
         id_user = st.text_input(label='Coloque seu id:', max_chars=8)
         senha_user = st.text_input(label='Coloque sua senha:', type='password')
