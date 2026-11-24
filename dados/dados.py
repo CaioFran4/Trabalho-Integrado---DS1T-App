@@ -82,12 +82,24 @@ def inicializar_banco():
     ''')
 
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS tickets (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        codigo TEXT UNIQUE NOT NULL DEFAULT (lower(hex(randomblob(4)))),
-        data_emissao TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )
-''')
+        CREATE TABLE IF NOT EXISTS tickets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            codigo TEXT UNIQUE NOT NULL DEFAULT (lower(hex(randomblob(4)))),
+            data_emissao TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS cadastro_motoboys (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome_motoboy TEXT NOT NULL,
+            telefone TEXT NOT NULL,
+            placa TEXT NOT NULL UNIQUE,
+            foto TEXT
+        )
+    ''')
+
+
     
     conexao.commit()
     conexao.close()
