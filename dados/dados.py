@@ -99,8 +99,29 @@ def inicializar_banco():
         )
     ''')
 
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS lucro (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,    
+            faturamento_bruto REAL NOT NULL,
+            despesas REAL NOT NULL,
+            lucro_liquido REAL GENERATED ALWAYS AS (faturamento_bruto - despesas) STORED,
+            data_registro TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
 
-    
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS configuracoes (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        nome_restaurante TEXT NOT NULL DEFAULT 'La Pasta'
+    )
+''')
+
+    cursor.execute('''
+        INSERT OR IGNORE INTO configuracoes (id, nome_restaurante)
+        VALUES (1, 'La Pasta')
+    ''')
+
+
     conexao.commit()
     conexao.close()
 
@@ -121,7 +142,7 @@ if __name__ == "__main__":
     print("Tabelas e Views no banco:", cursor.fetchall())
     print("-" * 40)
 
-    cursor.execute("PRAGMA table_info(tickets)")
+    cursor.execute("PRAGMA table_info(configuracoes)")
     for coluna in cursor.fetchall():
         print(coluna)
 
