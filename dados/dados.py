@@ -80,6 +80,14 @@ def inicializar_banco():
         LEFT JOIN produtos pr ON hp.produto_id = pr.id
         ORDER BY p.data_pedido DESC
     ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS tickets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        codigo TEXT UNIQUE NOT NULL DEFAULT (lower(hex(randomblob(4)))),
+        data_emissao TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+''')
     
     conexao.commit()
     conexao.close()
@@ -90,8 +98,8 @@ def gerar_id_unico(cursor):
         cursor.execute("SELECT 1 FROM usuario WHERE id_user = ?", (novo_id,))
         if not cursor.fetchone():
             return novo_id
-
-
+        
+if __name__ == "__main__":
     inicializar_banco()
     
     conexao = conectar()
@@ -101,7 +109,7 @@ def gerar_id_unico(cursor):
     print("Tabelas e Views no banco:", cursor.fetchall())
     print("-" * 40)
 
-    cursor.execute("PRAGMA table_info(produtos)")
+    cursor.execute("PRAGMA table_info(tickets)")
     for coluna in cursor.fetchall():
         print(coluna)
 
