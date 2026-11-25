@@ -28,7 +28,7 @@ def inicializar_banco():
             descricao TEXT NOT NULL DEFAULT 'Sem descrição',
             categoria TEXT NOT NULL DEFAULT 'Massa' CHECK(categoria IN ('Massa', 'bebidas', 'igrediente')),
             status TEXT NOT NULL DEFAULT 'Disponivel' CHECK (status IN ('Disponivel', 'Indisponivel')),
-            preparo_min TEXT NOT NULL
+            preparo_min TEXT NOT NULL DEFAULT '15 MINUTOS'
         )
     ''')
     

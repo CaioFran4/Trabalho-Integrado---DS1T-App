@@ -1,5 +1,7 @@
 import streamlit as st
 import sqlite3
+import pandas as pd
+import altair as alt
 
 st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state="expanded")
 
@@ -101,3 +103,46 @@ with col4:
             <p class="quadrado-valor">{tempo_fmt}</p>
         </div>
     """, unsafe_allow_html=True)
+
+st.write("")
+
+col_grafico, col_lateral = st.columns([3, 1])
+
+with col_grafico:
+    with st.container(border=True):
+        st.markdown("#### Vendas Registradas do Dia")
+
+        conexao = sqlite3.connect('banco.db')
+        df_vendas = pd.read_sql_query("""
+            SELECT 
+                strftime('%H:00', p.data_pedido) AS Horário,
+                COALESCE(SUM(hp.quantidade * hp.preco_unitario), 0) AS Vendas
+            FROM pedidos p
+            JOIN historico_pedidos hp ON p.id = hp.pedido_id
+            WHERE DATE(p.data_pedido) = DATE('now', 'localtime')
+            GROUP BY Horário
+            ORDER BY Horário
+        """, conexao)
+        conexao.close()
+
+        if not df_vendas.empty:
+            grafico = alt.Chart(df_vendas).mark_line(
+                point=True,
+                interpolate="monotone",
+                color="#111827",
+                strokeWidth=3
+            ).encode(
+                x=alt.X("Horário:N", title="Horário do Dia"),
+                y=alt.Y("Vendas:Q", title="Faturamento (R$)"),
+                tooltip=["Horário", alt.Tooltip("Vendas:Q", format="$.2f")]
+            ).properties(height=280)
+
+            st.altair_chart(grafico, use_container_width=True)
+        else:
+            st.info("Nenhuma venda registrada hoje.")
+
+with col_lateral:
+    with st.container(border=True):
+        st.markdown("#### Pedidos recentes")
+
+        
