@@ -26,9 +26,9 @@ def inicializar_banco():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome_prod TEXT NOT NULL,
             descricao TEXT NOT NULL DEFAULT 'Sem descrição',
-            categoria TEXT NOT NULL DEFAULT 'Massa' CHECK(categoria IN ('Massa', 'bebidas', 'igrediente')),
+            categoria TEXT NOT NULL DEFAULT 'Massa' CHECK(categoria IN ('Massa', 'bebidas', 'ingrediente')),
             status TEXT NOT NULL DEFAULT 'Disponivel' CHECK (status IN ('Disponivel', 'Indisponivel')),
-            preparo_min TEXT NOT NULL DEFAULT '15 MINUTOS'
+            preparo_min TEXT NOT NULL DEFAULT '15'
         )
     ''')
     
@@ -42,7 +42,7 @@ def inicializar_banco():
             bairro TEXT NOT NULL,
             cidade TEXT NOT NULL,
             complemento TEXT,
-            status TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'Em entrega' CHECK(status IN ('Entregue', 'Em entrega', 'Cancelado')),
             data_pedido TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
     ''')
