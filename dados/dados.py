@@ -20,17 +20,17 @@ def inicializar_banco():
         INSERT OR IGNORE INTO usuario (id_user, senha)
         VALUES ('12345678', '123')
     ''')
-    
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS produtos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome_prod TEXT NOT NULL,
             descricao TEXT NOT NULL DEFAULT 'Sem descrição',
             categoria TEXT NOT NULL DEFAULT 'Massa' CHECK(categoria IN ('Massa', 'bebidas', 'igrediente')),
-            status TEXT NOT NULL DEFAULT 'Disponivel' CHECK (status IN ('Disponivel', 'Indisponivel'))
+            status TEXT NOT NULL DEFAULT 'Disponivel' CHECK (status IN ('Disponivel', 'Indisponivel')),
+            preparo_min TEXT NOT NULL
         )
     ''')
-
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS pedidos (
@@ -111,11 +111,11 @@ def inicializar_banco():
     ''')
 
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS configuracoes (
-        id INTEGER PRIMARY KEY CHECK (id = 1),
-        nome_restaurante TEXT NOT NULL DEFAULT 'La Pasta'
-    )
-''')
+        CREATE TABLE IF NOT EXISTS configuracoes (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            nome_restaurante TEXT NOT NULL DEFAULT 'La Pasta'
+        )
+    ''')
 
     cursor.execute('''
         INSERT OR IGNORE INTO configuracoes (id, nome_restaurante)
@@ -135,16 +135,4 @@ def gerar_id_unico(cursor):
         
 if __name__ == "__main__":
     inicializar_banco()
-    
-    conexao = conectar()
-    cursor = conexao.cursor()
-
-    cursor.execute("SELECT name, type FROM sqlite_master WHERE type IN ('table', 'view')")
-    print("Tabelas e Views no banco:", cursor.fetchall())
-    print("-" * 40)
-
-    cursor.execute("PRAGMA table_info(configuracoes)")
-    for coluna in cursor.fetchall():
-        print(coluna)
-
-    conexao.close()
+    print("Banco de dados atualizado com sucesso!")

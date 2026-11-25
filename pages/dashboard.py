@@ -1,4 +1,5 @@
 import streamlit as st
+import sqlite3
 
 st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state="expanded")
 
@@ -31,40 +32,72 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+def buscar_indicadores():
+    conexao = sqlite3.connect('banco.db')
+    cursor = conexao.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM pedidos WHERE DATE(data_pedido) = DATE('now', 'localtime')")
+    pedidos_hoje = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM cadastro_motoboys")
+    motoboys_disp = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COALESCE(SUM(hp.quantidade * hp.preco_unitario), 0)
+        FROM historico_pedidos hp
+        JOIN pedidos p ON hp.pedido_id = p.id
+        WHERE DATE(p.data_pedido) = DATE('now', 'localtime')
+    """)
+    faturamento_hoje = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COALESCE(AVG(CAST(preparo_min AS REAL)), 0)
+        FROM produtos
+        WHERE status = 'Disponivel'
+    """)
+    tempo_medio = cursor.fetchone()[0]
+
+    conexao.close()
+    return pedidos_hoje, motoboys_disp, faturamento_hoje, tempo_medio
+
+pedidos_hoje, motoboys_disp, faturamento_hoje, tempo_medio = buscar_indicadores()
+
+faturamento_fmt = f"R$ {faturamento_hoje:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+tempo_fmt = f"{int(round(tempo_medio))} min"
+
 st.write("## Olá Gerente!")
 st.write("")
-
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.markdown("""
+    st.markdown(f"""
         <div class="quadrado-card">
             <span class="quadrado-titulo">Pedidos Hoje</span>
-            <p class="quadrado-valor">Texto 1</p>
+            <p class="quadrado-valor">{pedidos_hoje}</p>
         </div>
     """, unsafe_allow_html=True)
 
 with col2:
-    st.markdown("""
+    st.markdown(f"""
         <div class="quadrado-card">
-            <span class="quadrado-titulo">Motoboys</span>
-            <p class="quadrado-valor">Texto 2</p>
+            <span class="quadrado-titulo">Motoboys Disponíveis</span>
+            <p class="quadrado-valor">{motoboys_disp}</p>
         </div>
     """, unsafe_allow_html=True)
 
 with col3:
-    st.markdown("""
+    st.markdown(f"""
         <div class="quadrado-card">
-            <span class="quadrado-titulo">Faturamento</span>
-            <p class="quadrado-valor">Texto 3</p>
+            <span class="quadrado-titulo">Faturamento Hoje</span>
+            <p class="quadrado-valor">{faturamento_fmt}</p>
         </div>
     """, unsafe_allow_html=True)
 
 with col4:
-    st.markdown("""
+    st.markdown(f"""
         <div class="quadrado-card">
             <span class="quadrado-titulo">Tempo Médio</span>
-            <p class="quadrado-valor">Texto 4</p>
+            <p class="quadrado-valor">{tempo_fmt}</p>
         </div>
     """, unsafe_allow_html=True)
