@@ -127,16 +127,18 @@ with st.sidebar:
                 salvar_configuracoes(novo_nome.strip(), nova_url.strip())
                 st.rerun()
 
-    st.divider()
-    if st.button("Dashboard", use_container_width=True):
+        st.divider()
+    if st.button("Dashboard", key="btn_dash_main", use_container_width=True):
         st.switch_page("pages/dashboard.py")
-    if st.button("Relatórios", use_container_width=True):
-        st.switch_page("pages/relatorios.py")
-    if st.button("Alocação", use_container_width=True):
+    if st.button("Relatórios", key="btn_rel_main", use_container_width=True):
+        st.switch_page("pages/his_entregas.py")
+    if st.button("Gestão de Produtos", key="btn_prod_main", use_container_width=True):
+        st.switch_page("pages/produtos_crud.py")
+    if st.button("Alocação", key="btn_aloc_main", use_container_width=True):
         st.switch_page("pages/alocacao.py")
 
     st.divider()
-    if st.button("Sair", use_container_width=True):
+    if st.button("Sair", key="btn_sair_main", use_container_width=True):
         if "usuario_logado" in st.session_state:
             del st.session_state.usuario_logado
         st.switch_page("la_pasta_login.py")
