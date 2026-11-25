@@ -5,7 +5,6 @@ def popular_banco_teste():
     conexao = sqlite3.connect('banco.db')
     cursor = conexao.cursor()
 
-    # 1. Produtos (Massa, bebidas, igrediente + status + preparo_min)
     produtos_teste = [
         ("Spaghetti Carbonara", "Massa artesanal com bacon e molho cremoso", "Massa", "Disponivel", "20"),
         ("Lasanha Bolonhesa", "Camadas de massa fresca com carne moída e queijo", "Massa", "Disponivel", "30"),
@@ -19,7 +18,6 @@ def popular_banco_teste():
         VALUES (?, ?, ?, ?, ?)
     """, produtos_teste)
 
-    # 2. Motoboys
     motoboys_teste = [
         ("Carlos Silva", "(11) 98888-1111", "ABC1D23", "carlos.png"),
         ("Marcos Oliveira", "(11) 97777-2222", "XYZ9K88", "marcos.png"),
@@ -30,11 +28,9 @@ def popular_banco_teste():
         VALUES (?, ?, ?, ?)
     """, motoboys_teste)
 
-    # 3. Tickets (gera 5 códigos hexadecimais automáticos)
     for _ in range(5):
         cursor.execute("INSERT INTO tickets DEFAULT VALUES")
 
-    # 4. Pedidos de Hoje (horários variados para testar o gráfico oscilante)
     hoje = datetime.now()
     horarios = [
         hoje.replace(hour=11, minute=15).strftime("%Y-%m-%d %H:%M:%S"),
@@ -56,7 +52,6 @@ def popular_banco_teste():
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, pedidos_teste)
 
-    # 5. Histórico de Itens dos Pedidos (para calcular faturamento e gráfico)
     itens_teste = [
         (1, 1, 2, 45.00),  # Pedido 1: 2x Carbonara = R$ 90,00 (11h)
         (1, 4, 2, 7.00),   # Pedido 1: 2x Refri = R$ 14,00
@@ -71,7 +66,6 @@ def popular_banco_teste():
         VALUES (?, ?, ?, ?)
     """, itens_teste)
 
-    # 6. Registro de Lucro de Teste
     cursor.execute("""
         INSERT INTO lucro (faturamento_bruto, despesas)
         VALUES (627.00, 210.50)

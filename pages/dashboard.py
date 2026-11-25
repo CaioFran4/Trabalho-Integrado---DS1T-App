@@ -145,4 +145,42 @@ with col_lateral:
     with st.container(border=True):
         st.markdown("#### Pedidos recentes")
 
-        
+        conexao = sqlite3.connect('banco.db')
+        df_recentes = pd.read_sql_query("""
+            SELECT 
+                COALESCE(t.codigo, CAST(p.ticket_id AS TEXT)) AS ticket,
+                p.status AS status,
+                strftime('%H:%M', p.data_pedido) AS hora
+            FROM pedidos p
+            LEFT JOIN tickets t ON p.ticket_id = t.id
+            ORDER BY p.data_pedido DESC
+            LIMIT 6
+        """, conexao)
+        conexao.close()
+
+        if not df_recentes.empty:
+            for _, row in df_recentes.iterrows():
+                status_texto = str(row["status"]).strip()
+                status_lower = status_texto.lower()
+
+                if status_lower == "entregue":
+                    cor_bolinha = "#22c55e"
+                elif status_lower in ["em entrega", "em rota"]:
+                    cor_bolinha = "#f97316"
+                elif status_lower == "cancelado":
+                    cor_bolinha = "#ef4444"
+                else:
+                    cor_bolinha = "#9ca3af"
+
+                st.markdown(f"""
+                    <div class="pedido-item">
+                        <span class="ticket-tag">#{row['ticket']}</span>
+                        <span><strong>{status_texto}</strong></span>
+                        <span style="display: flex; align-items: center; gap: 6px;">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background-color: {cor_bolinha}; display: inline-block;"></span>
+                            {row['hora']}
+                        </span>
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("Nenhum pedido recente.")
