@@ -113,7 +113,8 @@ def inicializar_banco():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS configuracoes (
             id INTEGER PRIMARY KEY CHECK (id = 1),
-            nome_restaurante TEXT NOT NULL DEFAULT 'La Pasta'
+            nome_restaurante TEXT NOT NULL DEFAULT 'La Pasta',
+            logo_url TEXT DEFAULT ''
         )
     ''')
 
@@ -122,6 +123,10 @@ def inicializar_banco():
         VALUES (1, 'La Pasta')
     ''')
 
+    cursor.execute("PRAGMA table_info(configuracoes)")
+    colunas_config = [col[1] for col in cursor.fetchall()]
+    if "logo_url" not in colunas_config:
+        cursor.execute("ALTER TABLE configuracoes ADD COLUMN logo_url TEXT DEFAULT ''")
 
     conexao.commit()
     conexao.close()
@@ -135,4 +140,17 @@ def gerar_id_unico(cursor):
         
 if __name__ == "__main__":
     inicializar_banco()
-    print("Banco de dados atualizado com sucesso!")
+    
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    print("--- COLUNAS DE CONFIGURACOES ---")
+    cursor.execute("PRAGMA table_info(configuracoes)")
+    for col in cursor.fetchall():
+        print(col)
+
+    print("\n--- DADOS DE CONFIGURACOES ---")
+    cursor.execute("SELECT * FROM configuracoes")
+    print(cursor.fetchall())
+
+    conexao.close()
