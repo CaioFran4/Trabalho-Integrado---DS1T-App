@@ -7,6 +7,9 @@ st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state=
 
 st.markdown("""
     <style>
+    [data-testid="stSidebarNav"] {
+        display: none;
+    }
     .quadrado-card {
         background-color: #f8f9fa;
         border: 1px solid #dee2e6;
@@ -31,8 +34,56 @@ st.markdown("""
         font-weight: 700;
         margin: 0;
     }
+    .pedido-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        color: #1f2937;
+    }
+    .ticket-tag {
+        background-color: #6b7280;
+        color: #ffffff;
+        padding: 2px 8px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.78rem;
+        font-family: monospace;
+    }
+    .alerta-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        color: #991b1b;
+    }
     </style>
 """, unsafe_allow_html=True)
+
+with st.sidebar:
+    st.markdown("### Menu")
+    if st.button("Dashboard", use_container_width=True):
+        st.switch_page("pages/dashboard.py")
+    if st.button("Relatórios", use_container_width=True):
+        st.switch_page("pages/relatorios.py")
+    if st.button("Alocação", use_container_width=True):
+        st.switch_page("pages/alocacao.py")
+
+    st.divider()
+    if st.button("Sair", use_container_width=True):
+        if "usuario_logado" in st.session_state:
+            del st.session_state.usuario_logado
+        st.switch_page("la_pasta_login.py")
 
 def buscar_indicadores():
     conexao = sqlite3.connect('banco.db')
@@ -50,14 +101,14 @@ def buscar_indicadores():
         JOIN pedidos p ON hp.pedido_id = p.id
         WHERE DATE(p.data_pedido) = DATE('now', 'localtime')
     """)
-    faturamento_hoje = cursor.fetchone()[0]
+    faturamento_hoje = float(cursor.fetchone()[0])
 
     cursor.execute("""
         SELECT COALESCE(AVG(CAST(preparo_min AS REAL)), 0)
         FROM produtos
         WHERE status = 'Disponivel'
     """)
-    tempo_medio = cursor.fetchone()[0]
+    tempo_medio = float(cursor.fetchone()[0])
 
     conexao.close()
     return pedidos_hoje, motoboys_disp, faturamento_hoje, tempo_medio
@@ -184,3 +235,65 @@ with col_lateral:
                 """, unsafe_allow_html=True)
         else:
             st.info("Nenhum pedido recente.")
+
+st.write("")
+
+col_mais_vendidos, col_alertas = st.columns([3, 1])
+
+with col_mais_vendidos:
+    with st.container(border=True):
+        st.markdown("#### Top 3 Produtos Mais Vendidos")
+
+        conexao = sqlite3.connect('banco.db')
+        df_top_produtos = pd.read_sql_query("""
+            SELECT 
+                pr.nome_prod AS produto,
+                SUM(hp.quantidade) AS total_vendido
+            FROM historico_pedidos hp
+            JOIN produtos pr ON hp.produto_id = pr.id
+            GROUP BY pr.id, pr.nome_prod
+            ORDER BY total_vendido DESC
+            LIMIT 3
+        """, conexao)
+        conexao.close()
+
+        if not df_top_produtos.empty:
+            maior_venda = df_top_produtos["total_vendido"].max()
+
+            for index, row in df_top_produtos.iterrows():
+                posicao = index + 1
+                nome_prod = row["produto"]
+                qtd = int(row["total_vendido"])
+                progresso = float(qtd / maior_venda) if maior_venda > 0 else 0.0
+
+                c_pos, c_nome, c_barra, c_qtd = st.columns([0.5, 2.5, 4, 1], vertical_alignment="center")
+                c_pos.markdown(f"**{posicao}º**")
+                c_nome.write(nome_prod)
+                c_barra.progress(progresso)
+                c_qtd.markdown(f"**{qtd} un.**")
+        else:
+            st.info("Nenhuma venda de produto registrada ainda.")
+
+with col_alertas:
+    with st.container(border=True):
+        st.markdown("#### Alertas de Estoque")
+
+        conexao = sqlite3.connect('banco.db')
+        df_indisponiveis = pd.read_sql_query("""
+            SELECT nome_prod, categoria
+            FROM produtos
+            WHERE status = 'Indisponivel'
+            LIMIT 5
+        """, conexao)
+        conexao.close()
+
+        if not df_indisponiveis.empty:
+            for _, row in df_indisponiveis.iterrows():
+                st.markdown(f"""
+                    <div class="alerta-item">
+                        <span><strong>{row['nome_prod']}</strong></span>
+                        <span style="font-size: 0.75rem; opacity: 0.85;">{row['categoria']}</span>
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.success("Estoque completo.")
