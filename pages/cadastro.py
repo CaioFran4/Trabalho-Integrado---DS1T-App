@@ -55,7 +55,7 @@ with col_centro:
             if st.button("Continuar para a Home", type="primary", use_container_width=True):
                 st.session_state.usuario_logado = st.session_state.id_gerado_tela
                 del st.session_state.id_gerado_tela
-                st.switch_page("pages/home.py")
+                st.switch_page("pages/dashboard.py")
 
         else:
             senha_user = st.text_input(label='Crie sua senha:', type='password')

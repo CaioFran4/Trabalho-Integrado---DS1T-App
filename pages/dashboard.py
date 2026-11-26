@@ -2,14 +2,12 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import altair as alt
+from dados.sidebar import render_sidebar
 
 st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
     <style>
-    [data-testid="stSidebarNav"] {
-        display: none;
-    }
     .quadrado-card {
         background-color: #f8f9fa;
         border: 1px solid #dee2e6;
@@ -70,78 +68,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-def preparar_config_logo():
-    conexao = sqlite3.connect('banco.db')
-    cursor = conexao.cursor()
-    cursor.execute("PRAGMA table_info(configuracoes)")
-    colunas = [col[1] for col in cursor.fetchall()]
-    if "logo_url" not in colunas:
-        cursor.execute("ALTER TABLE configuracoes ADD COLUMN logo_url TEXT DEFAULT ''")
-        conexao.commit()
-    conexao.close()
-
-def obter_configuracoes():
-    conexao = sqlite3.connect('banco.db')
-    cursor = conexao.cursor()
-    cursor.execute("SELECT nome_restaurante, logo_url FROM configuracoes WHERE id = 1")
-    res = cursor.fetchone()
-    conexao.close()
-    if res:
-        return (res[0] if res[0] else "La Pasta"), (res[1] if res[1] else "")
-    return "La Pasta", ""
-
-def salvar_configuracoes(novo_nome, nova_logo):
-    conexao = sqlite3.connect('banco.db')
-    cursor = conexao.cursor()
-    cursor.execute(
-        "UPDATE configuracoes SET nome_restaurante = ?, logo_url = ? WHERE id = 1",
-        (novo_nome, nova_logo)
-    )
-    conexao.commit()
-    conexao.close()
-
-preparar_config_logo()
-nome_restaurante, logo_atual = obter_configuracoes()
-
-with st.sidebar:
-    if logo_atual:
-        st.markdown(f"""
-            <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-                <img src="{logo_atual}" style="width: 80%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 14px; border: 1px solid #dee2e6;">
-            </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-            <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-                <div style="width: 80%; aspect-ratio: 1 / 1; border-radius: 14px; border: 2px dashed #9ca3af; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 0.85rem; text-align: center; padding: 10px;">
-                    Sem Logo
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    with st.popover("🖼️ Editar Logo e Nome", use_container_width=True):
-        novo_nome = st.text_input("Nome do Restaurante:", value=nome_restaurante)
-        nova_url = st.text_input("Endereço da Logo (HTTPS):", value=logo_atual, placeholder="https://...")
-        if st.button("Salvar", type="primary", use_container_width=True):
-            if novo_nome.strip():
-                salvar_configuracoes(novo_nome.strip(), nova_url.strip())
-                st.rerun()
-
-        st.divider()
-    if st.button("Dashboard", key="btn_dash_main", use_container_width=True):
-        st.switch_page("pages/dashboard.py")
-    if st.button("Relatórios", key="btn_rel_main", use_container_width=True):
-        st.switch_page("pages/his_entregas.py")
-    if st.button("Gestão de Produtos", key="btn_prod_main", use_container_width=True):
-        st.switch_page("pages/produtos_crud.py")
-    if st.button("Alocação", key="btn_aloc_main", use_container_width=True):
-        st.switch_page("pages/alocacao.py")
-
-    st.divider()
-    if st.button("Sair", key="btn_sair_main", use_container_width=True):
-        if "usuario_logado" in st.session_state:
-            del st.session_state.usuario_logado
-        st.switch_page("la_pasta_login.py")
+nome_restaurante, _ = render_sidebar("dashboard")
 
 def buscar_indicadores():
     conexao = sqlite3.connect('banco.db')
@@ -150,7 +77,7 @@ def buscar_indicadores():
     cursor.execute("SELECT COUNT(*) FROM pedidos WHERE DATE(data_pedido) = DATE('now', 'localtime')")
     pedidos_hoje = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM cadastro_motoboys")
+    cursor.execute("SELECT COUNT(*) FROM cadastro_motoboys WHERE disponivel = 1")
     motoboys_disp = cursor.fetchone()[0]
 
     cursor.execute("""
